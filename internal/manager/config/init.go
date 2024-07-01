@@ -18,6 +18,8 @@ import (
 )
 
 type flagStruct struct {
+	AllowReadOnlyConfigFile bool
+
 	configFilePath string
 	nobrowser      bool
 }
@@ -34,6 +36,8 @@ var (
 
 	// map of env vars to config keys
 	envBinds = map[string]string{
+		"allow_read_only_config_file": AllowReadOnlyConfigFile,
+
 		"host":          Host,
 		"port":          Port,
 		"external_host": ExternalHost,
@@ -48,6 +52,9 @@ var (
 var errConfigNotFound = errors.New("config file not found")
 
 func init() {
+	pflag.BoolVar(&flags.AllowReadOnlyConfigFile, "allow_read_only_config_file", false, "")
+	pflag.CommandLine.MarkHidden("allow_read_only_config_file")
+
 	pflag.IP("host", net.IPv4(0, 0, 0, 0), "ip address for the host")
 	pflag.Int("port", 9999, "port to serve from")
 	pflag.StringVarP(&flags.configFilePath, "config", "c", "", "config file to use")
@@ -84,9 +91,13 @@ func Initialize() (*Config, error) {
 			return nil, err
 		}
 
+		cfg.setDefault(AllowReadOnlyConfigFile, flags.AllowReadOnlyConfigFile)
+
 		err = cfg.Write()
-		if err != nil {
+		if !cfg.getBool(AllowReadOnlyConfigFile) && err != nil {
 			return nil, err
+		} else {
+			logger.Errorf("Continuing with read-only config file")
 		}
 
 		err = cfg.Validate()

@@ -30,6 +30,8 @@ import (
 )
 
 const (
+	AllowReadOnlyConfigFile = "allow_read_only_config_file"
+
 	Stash               = "stash"
 	Cache               = "cache"
 	BackupDirectoryPath = "backup_directory_path"
@@ -705,6 +707,10 @@ func (i *Config) GetBackupDirectoryPathOrDefault() string {
 	}
 
 	return ret
+}
+
+func (i *Config) GetAllowReadOnlyConfigFile() bool {
+	return i.getBool(AllowReadOnlyConfigFile)
 }
 
 // GetFFMpegPath returns the path to the FFMpeg executable.
