@@ -34,6 +34,8 @@ var (
 
 	// map of env vars to config keys
 	envBinds = map[string]string{
+		"allow_read_only_config_file": AllowReadOnlyConfigFile,
+
 		"host":          Host,
 		"port":          Port,
 		"external_host": ExternalHost,
@@ -85,8 +87,10 @@ func Initialize() (*Config, error) {
 		}
 
 		err = cfg.Write()
-		if err != nil {
+		if !cfg.getBool(AllowReadOnlyConfigFile) && err != nil {
 			return nil, err
+		} else {
+			logger.Errorf("Continuing with read-only config file")
 		}
 
 		err = cfg.Validate()
